@@ -1,0 +1,29 @@
+
+allprojects {
+
+    group 'it.raniero'
+    version '1.0.0'
+
+    apply plugin: 'java'
+    compileJava.options.encoding = 'UTF-8'
+
+}
+
+subprojects {
+
+
+    apply plugin: 'java'
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        compileOnly 'org.jetbrains:annotations:24.0.0'
+        annotationProcessor 'org.jetbrains:annotations:24.0.0'
+
+        compileOnly 'org.projectlombok:lombok:1.18.26'
+        annotationProcessor 'org.projectlombok:lombok:1.18.26'
+    }
+
+
+}

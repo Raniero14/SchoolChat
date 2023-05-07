@@ -1,0 +1,3 @@
+rootProject.name = "SchoolChat"
+include "API","server","database"
+
