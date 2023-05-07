@@ -1,5 +1,7 @@
 dependencies {
 
     compileOnly project(":API")
+    compileOnly project(":database")
+
 
 }

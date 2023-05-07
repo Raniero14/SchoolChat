@@ -1,0 +1,13 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+dependencies {
+    compileOnly project(":API")
+    implementation 'com.zaxxer:HikariCP:5.0.1'
+}
+
+
+artifacts {
+    archives shadowJar
+}

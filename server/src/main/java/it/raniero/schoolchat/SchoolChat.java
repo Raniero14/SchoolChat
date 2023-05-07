@@ -3,7 +3,14 @@ package it.raniero.schoolchat;
 import it.raniero.schoolchat.api.ISchoolChat;
 import it.raniero.schoolchat.api.user.action.UserAction;
 import it.raniero.schoolchat.api.utils.StartupSettings;
+import it.raniero.schoolchat.chat.ChatHandler;
+import it.raniero.schoolchat.database.connection.impl.HikariConnection;
+import it.raniero.schoolchat.database.connection.utils.ConnectionDetails;
+import it.raniero.schoolchat.database.mysql.ChatMessageDao;
+import it.raniero.schoolchat.database.mysql.ChatRoomDao;
+import it.raniero.schoolchat.database.mysql.ChatUserDao;
 import it.raniero.schoolchat.server.ChatServer;
+import it.raniero.schoolchat.user.manager.ChatUserManager;
 import lombok.Getter;
 
 import java.util.concurrent.BlockingQueue;
@@ -19,21 +26,34 @@ public class SchoolChat implements ISchoolChat {
     @Getter
     private ChatServer server;
 
+    private ChatHandler chatHandler;
+
+    @Getter
+    private ChatRoomDao chatRoomDao;
+
+    @Getter
+    private ChatUserDao chatUserDao;
+
+    @Getter
+    private ChatMessageDao chatMessageDao;
+
+    @Getter
+    private ChatUserManager userManager;
+
     private final BlockingQueue<UserAction> actionQueue = new LinkedBlockingQueue<>();
 
     private Thread actionThread;
 
     @Override
     public void start(StartupSettings settings) {
-
         instance = this;
 
+        initDatabase();
+        userManager = new ChatUserManager();
+        chatHandler = new ChatHandler();
         server = new ChatServer();
 
-        actionThread = new Thread(() -> {
-
-        });
-
+        actionThread = new Thread(this::checkActionQueue);
         actionThread.start();
     }
 
@@ -57,7 +77,8 @@ public class SchoolChat implements ISchoolChat {
 
                 UserAction action = actionQueue.take();
 
-
+                chatHandler.handleAction(action);
+                userManager.handleAction(action);
 
             } catch (InterruptedException e) {
 
@@ -65,6 +86,16 @@ public class SchoolChat implements ISchoolChat {
 
             }
         }
+    }
+
+    public void initDatabase() {
+        HikariConnection connection = new HikariConnection();
+        connection.initialize(new ConnectionDetails("localhost",3306,"chat","root",""));
+
+        chatRoomDao = new ChatRoomDao(connection);
+        chatUserDao = new ChatUserDao(connection);
+        chatMessageDao = new ChatMessageDao(connection);
+
     }
 
     @Override
