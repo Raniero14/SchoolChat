@@ -2,6 +2,7 @@ package it.raniero.schoolchat.api.user.manager;
 
 import it.raniero.schoolchat.api.user.IChatUser;
 import it.raniero.schoolchat.api.user.action.UserAction;
+import it.raniero.schoolchat.api.user.connection.ISocketWrapper;
 
 import java.util.UUID;
 
@@ -10,7 +11,7 @@ public interface IUserManager<T extends IChatUser> {
 
     void handleAction(UserAction action);
 
-    void addUser(IChatUser user);
+    T createUser(ISocketWrapper wrapper, UUID uuid);
 
     T getUser(UUID uuid);
 

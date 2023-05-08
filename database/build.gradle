@@ -5,6 +5,7 @@ plugins {
 dependencies {
     compileOnly project(":API")
     implementation 'com.zaxxer:HikariCP:5.0.1'
+    implementation 'mysql:mysql-connector-java:8.0.33'
 }
 
 

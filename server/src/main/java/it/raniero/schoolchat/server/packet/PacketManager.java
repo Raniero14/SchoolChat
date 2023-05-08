@@ -4,10 +4,9 @@ import it.raniero.schoolchat.api.server.packet.IPacket;
 import it.raniero.schoolchat.api.server.packet.IPacketHandler;
 import it.raniero.schoolchat.api.user.connection.ISocketWrapper;
 import it.raniero.schoolchat.server.packet.handlers.ChatPacketHandler;
+import it.raniero.schoolchat.server.packet.handlers.ClientSettingsHandler;
 import it.raniero.schoolchat.server.packet.handlers.LoginPacketHandler;
-import it.raniero.schoolchat.server.packet.in.ClientChatMessagePacket;
-import it.raniero.schoolchat.server.packet.in.ClientLoginPacket;
-import it.raniero.schoolchat.server.packet.in.ClientSessionPacket;
+import it.raniero.schoolchat.server.packet.in.*;
 
 import java.util.*;
 
@@ -23,11 +22,15 @@ public class PacketManager {
     public void registerPacketHandlers() {
 
         LoginPacketHandler loginPacketHandler = new LoginPacketHandler();
+        ChatPacketHandler chatPacketHandler = new ChatPacketHandler();
 
         packetHandlers.put(ClientLoginPacket.class,loginPacketHandler);
         packetHandlers.put(ClientSessionPacket.class,loginPacketHandler);
 
-        packetHandlers.put(ClientChatMessagePacket.class,new ChatPacketHandler());
+        packetHandlers.put(ClientChatMessagePacket.class,chatPacketHandler);
+        packetHandlers.put(ClientJoinRoomPacket.class,chatPacketHandler);
+
+        packetHandlers.put(ClientCreateRoomPacket.class,new ClientSettingsHandler());
 
     }
 

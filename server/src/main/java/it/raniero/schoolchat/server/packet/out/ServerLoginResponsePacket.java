@@ -10,7 +10,7 @@ public class ServerLoginResponsePacket implements IPacket {
 
     private ResponseType response;
 
-    private String message;
+    private String sessionToken;
 
 
 
@@ -19,7 +19,7 @@ public class ServerLoginResponsePacket implements IPacket {
 
     @Override
     public String encode() {
-        return response.toString() + ";" + message;
+        return response.toString() + ";" + sessionToken;
     }
 
 

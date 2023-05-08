@@ -10,6 +10,8 @@ public class ChatRoom {
 
     private final long roomId;
 
+    private String name;
+
     private boolean auth;
 
     private String password;

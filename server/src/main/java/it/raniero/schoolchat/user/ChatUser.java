@@ -1,11 +1,13 @@
 package it.raniero.schoolchat.user;
 
 import it.raniero.schoolchat.api.user.IChatUser;
+import it.raniero.schoolchat.api.user.connection.ISocketWrapper;
 import it.raniero.schoolchat.database.mysql.types.UserInformation;
 import it.raniero.schoolchat.server.socket.ClientSocketWrapper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import java.util.UUID;
 
@@ -18,6 +20,7 @@ public class ChatUser implements IChatUser {
 
     private final ClientSocketWrapper socketWrapper;
 
+    @Setter
     private UserInformation information;
 
 
@@ -29,6 +32,11 @@ public class ChatUser implements IChatUser {
     @Override
     public void banUser(String reason) {
 
+    }
+
+    @Override
+    public ISocketWrapper getConnection() {
+        return socketWrapper;
     }
 
     @Override

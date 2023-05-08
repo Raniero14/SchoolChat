@@ -13,13 +13,17 @@ public interface IRoomDao {
 
     boolean addUserToRoom(long userId,long roomId);
 
+    boolean addUserToRoom(long userId,String roomName);
+
+    ChatRoom getRoom(long roomId);
+
     Set<Long> getRoomsFromUserId(long userId);
 
     Set<Long> getMembersFromRoomId(long roomId);
 
     void removeUserFromRoom(long userId,long roomId);
 
-    void createRoom(String roomName,boolean auth,String password);
+    boolean createRoom(String roomName,boolean auth,String password);
 
     ChatRoom getRoomByName(String roomName);
 

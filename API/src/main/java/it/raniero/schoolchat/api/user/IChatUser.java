@@ -1,5 +1,7 @@
 package it.raniero.schoolchat.api.user;
 
+import it.raniero.schoolchat.api.user.connection.ISocketWrapper;
+
 import java.util.UUID;
 
 public interface IChatUser {
@@ -10,6 +12,7 @@ public interface IChatUser {
 
     void banUser(String reason);
 
+    ISocketWrapper getConnection();
     boolean hasOpenMessages();
 
 

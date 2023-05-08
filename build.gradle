@@ -27,3 +27,48 @@ subprojects {
 
 
 }
+
+
+task allJar(type: Jar, dependsOn: subprojects.assemble) {
+    baseName = 'SchoolChat'
+
+    subprojects.each { subproject ->
+        File file = new File(subproject.getBuildDir().getPath() + "/libs/")
+        boolean dumb = file.listFiles().any {
+            it.getName().endsWith(".jarinjar")
+        }
+        boolean shadowed = file.listFiles().any {
+            it.getName().contains("-all")
+        }
+        from file.listFiles().collect {
+            if(shadowed && !it.getName().contains("-all")) {
+                return;
+            }
+            if(it.getName().endsWith(".jar")) {
+                if(!dumb) {
+                    zipTree(it)
+                }
+            } else {
+                fileTree(it)
+            }
+        }
+    }
+}
+
+artifacts {
+    archives allJar
+}
+
+
+tasks.withType(Jar) {
+    eachFile {
+        it.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+
+    manifest {
+        attributes(
+                'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' '),
+                'Main-Class': 'it.raniero.schoolchat.application.SchoolChatApplication'
+            )
+        }
+}

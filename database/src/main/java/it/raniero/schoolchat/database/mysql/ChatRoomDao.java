@@ -19,6 +19,7 @@ public class ChatRoomDao implements IRoomDao {
 
     private static final String INSERT_ROOM;
 
+    private static final String SELECT_ROOM;
     private static final String SELECT_ROOM_NAME;
 
     private static final String DELETE_ROOM;
@@ -72,6 +73,54 @@ public class ChatRoomDao implements IRoomDao {
             e.printStackTrace();
         }
         return false;
+    }
+
+    @Override
+    public boolean addUserToRoom(long userId, String roomName) {
+        try(PreparedStatement statement = connection.getConnection().prepareStatement(INSERT_MEMBER);
+            PreparedStatement selectRoomStatement = connection.getConnection().prepareStatement(SELECT_ROOM_NAME)) {
+
+
+            selectRoomStatement.setString(1,roomName);
+
+            ResultSet resultSet = selectRoomStatement.executeQuery();
+
+            if(resultSet.next()) {
+
+                statement.setLong(1,resultSet.getLong("room_id"));
+                statement.setLong(2,userId);
+
+                return statement.executeUpdate() != 0;
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public ChatRoom getRoom(long roomId) {
+        try(PreparedStatement statement = connection.getConnection().prepareStatement(SELECT_ROOM)) {
+
+            statement.setLong(1,roomId);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            if(resultSet.next()) {
+                return new ChatRoom(
+                        resultSet.getLong("room_id"),
+                        resultSet.getString("name"),
+                        resultSet.getBoolean("auth"),
+                        resultSet.getString("name"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     @Override
@@ -134,19 +183,20 @@ public class ChatRoomDao implements IRoomDao {
     }
 
     @Override
-    public void createRoom(String roomName, boolean auth, String password) {
+    public boolean createRoom(String roomName, boolean auth, String password) {
         try(PreparedStatement statement = connection.getConnection().prepareStatement(INSERT_ROOM)) {
 
             statement.setString(1,roomName);
             statement.setBoolean(2,auth);
             statement.setString(3,password);
 
-            statement.executeUpdate();
+            return statement.executeUpdate() != 0;
 
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     @Override
@@ -160,6 +210,7 @@ public class ChatRoomDao implements IRoomDao {
             if(resultSet.next()) {
                 return new ChatRoom(
                         resultSet.getLong("room_id"),
+                        resultSet.getString("name"),
                         resultSet.getBoolean("auth"),
                         resultSet.getString("name"));
             }
@@ -189,15 +240,19 @@ public class ChatRoomDao implements IRoomDao {
     static {
 
         CREATE_ROOM_TABLE = "CREATE TABLE IF NOT EXISTS room (room_id BIGINT NOT NULL, name VARCHAR(32), auth BOOLEAN, password VARCHAR(64), PRIMARY KEY(room_id), UNIQUE(name))";
-        CREATE_ROOM_USER_TABLE = "CREATE TABLE IF NOT EXISTS room_user (room_id BIGINT NOT NULL, user_id BIGINT NOT NULL,FOREIGN KEY(room_id) REFERENCES room(room_id) ON DELETE CASCADE,FOREIGN KEY(user_id) REFERENCES user(user_id) ON DELETE CASCADE))";
+        CREATE_ROOM_USER_TABLE = "CREATE TABLE IF NOT EXISTS room_user (room_id BIGINT NOT NULL, user_id BIGINT NOT NULL,FOREIGN KEY(room_id) REFERENCES room(room_id) ON DELETE CASCADE,FOREIGN KEY(user_id) REFERENCES user(user_id) ON DELETE CASCADE)";
         INSERT_ROOM = "INSERT INTO room (name,auth,password) VALUES (?,?,?)";
 
         DELETE_ROOM = "DELETE FROM room WHERE name = ?";
         DELETE_MEMBER = "DELETE FROM room_user WHERE room_id = ? AND user_id = ?";
         SELECT_ROOM_NAME = "SELECT * FROM room WHERE name = ?";
 
+        SELECT_ROOM = "SELECT * FROM room WHERE roomId = ?";
+
 
         INSERT_MEMBER = "INSERT INTO room_user (room_id,user_id) VALUES (?,?)";
+
+
         SELECT_MEMBERS = "SELECT user_id FROM room_user WHERE room_id = ?";
         SELECT_ROOMS = "SELECT room_id FROM room_user WHERE user_id = ?";
 

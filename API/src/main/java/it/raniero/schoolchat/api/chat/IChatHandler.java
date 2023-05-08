@@ -1,6 +1,5 @@
 package it.raniero.schoolchat.api.chat;
 
-import it.raniero.schoolchat.api.chat.types.ChatRoom;
 import it.raniero.schoolchat.api.user.IChatUser;
 import it.raniero.schoolchat.api.user.action.UserAction;
 
@@ -17,7 +16,6 @@ public interface IChatHandler {
     void addToRoom(IChatUser user, long roomId,String password);
 
     void kickFromRoom(IChatUser user, long roomId,String reason);
-    Optional<ChatRoom> fetchRoom(long roomId);
 
     void handleAction(UserAction action);
 
