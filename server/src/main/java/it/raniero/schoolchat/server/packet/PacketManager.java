@@ -7,6 +7,9 @@ import it.raniero.schoolchat.server.packet.handlers.ChatPacketHandler;
 import it.raniero.schoolchat.server.packet.handlers.ClientSettingsHandler;
 import it.raniero.schoolchat.server.packet.handlers.LoginPacketHandler;
 import it.raniero.schoolchat.server.packet.in.*;
+import it.raniero.schoolchat.server.packet.out.ServerChatMessagePacket;
+import it.raniero.schoolchat.server.packet.out.ServerGeneralResponsePacket;
+import it.raniero.schoolchat.server.packet.out.ServerLoginResponsePacket;
 
 import java.util.*;
 
@@ -26,6 +29,7 @@ public class PacketManager {
 
         packetHandlers.put(ClientLoginPacket.class,loginPacketHandler);
         packetHandlers.put(ClientSessionPacket.class,loginPacketHandler);
+        packetHandlers.put(ClientRegisterPacket.class,loginPacketHandler);
 
         packetHandlers.put(ClientChatMessagePacket.class,chatPacketHandler);
         packetHandlers.put(ClientJoinRoomPacket.class,chatPacketHandler);
@@ -48,7 +52,7 @@ public class PacketManager {
 
         int maxId = user ? clientPacketRegister.size() : clientLoginPacketRegister.size();
 
-        if(id == -1 || maxId < id) {
+        if(id == -1 || maxId <= id - 1) {
             return null;
         }
 
@@ -56,6 +60,8 @@ public class PacketManager {
 
 
             Class<? extends IPacket> packetClass = user ? clientPacketRegister.get(id - 1) : clientLoginPacketRegister.get(id - 1);
+
+            System.out.println("trovato pacchetto: " + packetClass.getSimpleName());
 
             IPacket packet = packetClass.getDeclaredConstructor().newInstance();
             packet.decode(extractContent(input));
@@ -90,15 +96,30 @@ public class PacketManager {
     }
 
     public int getServerPacketId(IPacket packet) {
-        return serverPacketRegister.indexOf(packet.getClass());
+        return serverPacketRegister.indexOf(packet.getClass()) + 1;
     }
 
     static {
-        clientPacketRegister = new LinkedList<>(Arrays.asList());
+        clientPacketRegister = new LinkedList<>(
+                Arrays.asList(
+                        ClientChatMessagePacket.class,
+                        ClientCreateRoomPacket.class,
+                        ClientJoinRoomPacket.class,
+                        ClientNicknameChangePacket.class));
 
-        clientLoginPacketRegister = new LinkedList<>(Arrays.asList());
+        clientLoginPacketRegister = new LinkedList<>(
+                Arrays.asList(
+                        ClientLoginPacket.class,
+                        ClientSessionPacket.class,
+                        ClientRegisterPacket.class
+                ));
 
-        serverPacketRegister = new LinkedList<>(Arrays.asList());
+        serverPacketRegister = new LinkedList<>(
+                Arrays.asList(
+                       ServerLoginResponsePacket.class,
+                       ServerGeneralResponsePacket.class,
+                       ServerChatMessagePacket.class
+                ));
     }
 
 

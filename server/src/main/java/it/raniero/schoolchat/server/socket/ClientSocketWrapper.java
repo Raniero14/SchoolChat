@@ -30,7 +30,6 @@ public class ClientSocketWrapper implements ISocketWrapper {
     @Getter
     private final Socket socket;
 
-    @Setter
     private UUID uuid;
 
 
@@ -42,10 +41,11 @@ public class ClientSocketWrapper implements ISocketWrapper {
                 BufferedReader reader =
                         new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                while (!Thread.currentThread().isInterrupted() || socket.isClosed() || socket.isInputShutdown()) {
+                while (!Thread.currentThread().isInterrupted() || !socket.isClosed() || !socket.isInputShutdown()) {
 
                     String line = reader.readLine();
 
+                    System.out.println("Nuovo pacchetto: " + line);
                     SchoolChat.getInstance().getServer().handleMessage(this,line);
 
                 }
@@ -93,7 +93,7 @@ public class ClientSocketWrapper implements ISocketWrapper {
     }
 
     public void checkSendQueue(OutputStream output) {
-        while (!Thread.currentThread().isInterrupted() || socket.isClosed() || socket.isOutputShutdown()) {
+        while (!Thread.currentThread().isInterrupted() || !socket.isClosed() || !socket.isOutputShutdown()) {
             try {
 
                 String message = messageQueue.take();
@@ -112,5 +112,10 @@ public class ClientSocketWrapper implements ISocketWrapper {
     @Override
     public UUID getPairedUser() {
         return uuid;
+    }
+
+    @Override
+    public void pairUser(UUID uuid) {
+        this.uuid = uuid;
     }
 }

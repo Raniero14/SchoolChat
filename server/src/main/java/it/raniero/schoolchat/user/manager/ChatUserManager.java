@@ -59,9 +59,22 @@ public class ChatUserManager implements IUserManager<ChatUser> {
         return user;
     }
 
+
+
+
     @Override
     public ChatUser getUser(UUID uuid) {
         return users.get(uuid);
+    }
+
+    @Override
+    public ChatUser getUserById(long userId) {
+        for (ChatUser user : users.values()) {
+            if(user.getInformation() != null && user.getInformation().getUserId() == userId) {
+                return user;
+            }
+        }
+        return null;
     }
 
     @Override

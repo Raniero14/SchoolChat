@@ -4,6 +4,7 @@ import it.raniero.schoolchat.database.IMessageDao;
 import it.raniero.schoolchat.database.connection.IConnection;
 import it.raniero.schoolchat.database.mysql.types.Message;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,7 +35,8 @@ public class ChatMessageDao implements IMessageDao {
 
     @Override
     public void createTables() {
-        try(PreparedStatement tableStmt = connection.getConnection().prepareStatement(CREATE_TABLE)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement tableStmt = conn.prepareStatement(CREATE_TABLE)) {
 
             tableStmt.executeUpdate();
 
@@ -48,7 +50,8 @@ public class ChatMessageDao implements IMessageDao {
 
     @Override
     public Set<Message> getMessagesFromChatId(long chatId) {
-        try(PreparedStatement statement = connection.getConnection().prepareStatement(SELECT_MESSAGES_CHAT)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement statement = conn.prepareStatement(SELECT_MESSAGES_CHAT)) {
 
             statement.setLong(1,chatId);
 
@@ -75,7 +78,8 @@ public class ChatMessageDao implements IMessageDao {
 
     @Override
     public Set<Message> getMessagesFromSenderId(long senderId) {
-        try(PreparedStatement statement = connection.getConnection().prepareStatement(SELECT_MESSAGES_SENDER)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement statement = conn.prepareStatement(SELECT_MESSAGES_SENDER)) {
 
             statement.setLong(1,senderId);
 
@@ -102,7 +106,8 @@ public class ChatMessageDao implements IMessageDao {
 
     @Override
     public void createMessage(Message.MessageType type, long senderId, long chatId, String text) {
-        try(PreparedStatement statement = connection.getConnection().prepareStatement(INSERT_MESSAGE)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement statement = conn.prepareStatement(INSERT_MESSAGE)) {
 
             int mes = type == Message.MessageType.PRIVATE_MESSAGE ? 1 : 0;
 
@@ -123,7 +128,8 @@ public class ChatMessageDao implements IMessageDao {
 
     @Override
     public Set<Message> getMessages(long senderId, long chatId) {
-        try(PreparedStatement statement = connection.getConnection().prepareStatement(SELECT_MESSAGES)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement statement = conn.prepareStatement(SELECT_MESSAGES)) {
 
             statement.setLong(1,senderId);
             statement.setLong(2,chatId);

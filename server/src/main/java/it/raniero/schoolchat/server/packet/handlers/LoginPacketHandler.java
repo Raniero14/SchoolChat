@@ -6,8 +6,12 @@ import it.raniero.schoolchat.api.server.packet.IPacketHandler;
 import it.raniero.schoolchat.api.user.connection.ISocketWrapper;
 import it.raniero.schoolchat.database.connection.utils.LoginStatus;
 import it.raniero.schoolchat.server.packet.in.ClientLoginPacket;
+import it.raniero.schoolchat.server.packet.in.ClientRegisterPacket;
 import it.raniero.schoolchat.server.packet.in.ClientSessionPacket;
 import it.raniero.schoolchat.server.packet.out.ServerLoginResponsePacket;
+import it.raniero.schoolchat.user.ChatUser;
+
+import java.util.UUID;
 
 public class LoginPacketHandler implements IPacketHandler {
 
@@ -29,8 +33,9 @@ public class LoginPacketHandler implements IPacketHandler {
                 return;
             }
 
-            instance.getUserManager().createUser(wrapper,status.getUuid());
+            ChatUser user = instance.getUserManager().createUser(wrapper,status.getUuid());
 
+            wrapper.pairUser(user.getUuid());
             wrapper.sendPacket(new ServerLoginResponsePacket(ServerLoginResponsePacket.ResponseType.SUCCESS, status.getSessionToken()));
 
         } else if (packet instanceof ClientSessionPacket sessionPacket) {
@@ -45,8 +50,25 @@ public class LoginPacketHandler implements IPacketHandler {
 
             instance.getUserManager().createUser(wrapper,status.getUuid());
 
+            wrapper.pairUser(status.getUuid());
             wrapper.sendPacket(new ServerLoginResponsePacket(ServerLoginResponsePacket.ResponseType.SUCCESS, status.getSessionToken()));
 
+
+        } else if (packet instanceof ClientRegisterPacket registerPacket) {
+
+            UUID uuid = instance.getChatUserDao().registerUser(
+                    registerPacket.getUsername(),
+                    registerPacket.getPassword());
+
+            if(uuid == null) {
+                wrapper.sendPacket(new ServerLoginResponsePacket(ServerLoginResponsePacket.ResponseType.FAILED,"none"));
+                return;
+            }
+
+            instance.getUserManager().createUser(wrapper,uuid);
+
+            wrapper.pairUser(uuid);
+            wrapper.sendPacket(new ServerLoginResponsePacket(ServerLoginResponsePacket.ResponseType.SUCCESS, "none"));
 
         }
 

@@ -15,6 +15,8 @@ public interface IRoomDao {
 
     boolean addUserToRoom(long userId,String roomName);
 
+    Set<ChatRoom> getRooms();
+
     ChatRoom getRoom(long roomId);
 
     Set<Long> getRoomsFromUserId(long userId);

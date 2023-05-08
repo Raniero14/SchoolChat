@@ -16,6 +16,8 @@ public interface ISocketWrapper {
 
     UUID getPairedUser();
 
+    void pairUser(UUID uuid);
+
 
 
 }

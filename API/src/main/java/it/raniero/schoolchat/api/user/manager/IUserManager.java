@@ -15,6 +15,8 @@ public interface IUserManager<T extends IChatUser> {
 
     T getUser(UUID uuid);
 
+    T getUserById(long userId);
+
     void removeUser(UUID uuid);
 
 }

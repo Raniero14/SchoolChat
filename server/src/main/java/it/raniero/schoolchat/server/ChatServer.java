@@ -10,13 +10,16 @@ import lombok.Getter;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ChatServer implements IChatServer {
 
-    private Map<InetAddress, ClientSocketWrapper> activeSockets;
+    private Map<InetAddress, ClientSocketWrapper> activeSockets = new ConcurrentHashMap<>();
 
     private ServerSocket serverSocket;
 
@@ -86,7 +89,10 @@ public class ChatServer implements IChatServer {
 
                 Socket socket = serverSocket.accept();
 
-                activeSockets.put(socket.getInetAddress(),new ClientSocketWrapper(socket));
+                ClientSocketWrapper wrapper = new ClientSocketWrapper(socket);
+
+                activeSockets.put(socket.getInetAddress(),wrapper);
+                wrapper.listen();
 
             } catch (IOException e) {
 
@@ -98,7 +104,7 @@ public class ChatServer implements IChatServer {
     }
 
     private ServerSocket createServerSocket(String network,int port) throws IOException {
-        return new ServerSocket(port,50, InetAddress.getByName(network));
+        return new ServerSocket(port,50, new InetSocketAddress(network,4020).getAddress());
     }
 
 }

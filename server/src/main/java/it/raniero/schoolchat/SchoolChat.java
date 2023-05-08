@@ -51,10 +51,14 @@ public class SchoolChat implements ISchoolChat {
         initDatabase();
         userManager = new ChatUserManager();
         chatHandler = new ChatHandler();
+        chatHandler.init();
         server = new ChatServer();
+        server.createServer(settings.getNetworkInterface(),settings.getPort());
 
         actionThread = new Thread(this::checkActionQueue);
         actionThread.start();
+
+        chatUserDao.registerUser("prova","ciao123");
     }
 
 

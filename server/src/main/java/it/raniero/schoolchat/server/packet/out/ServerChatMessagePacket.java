@@ -6,17 +6,22 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class ServerChatMessagePacket implements IPacket {
 
+    private boolean room;
 
-    private ServerLoginResponsePacket.ResponseType response;
+    private String senderName;
+
+    private long chatId;
 
     private String message;
+
+    private long timestamp;
 
     @Override
     public void decode(String[] data) {}
 
     @Override
     public String encode() {
-        return response.toString() + ";" + message;
+        return room + ";" + chatId + ";" + senderName + ";" +  timestamp + ";" + message;
     }
 
 

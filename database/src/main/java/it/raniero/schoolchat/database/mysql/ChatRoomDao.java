@@ -4,6 +4,7 @@ import it.raniero.schoolchat.database.IRoomDao;
 import it.raniero.schoolchat.database.connection.IConnection;
 import it.raniero.schoolchat.database.mysql.types.ChatRoom;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,7 +21,11 @@ public class ChatRoomDao implements IRoomDao {
     private static final String INSERT_ROOM;
 
     private static final String SELECT_ROOM;
+
     private static final String SELECT_ROOM_NAME;
+
+
+    private static final String SELECT_ROOMS;
 
     private static final String DELETE_ROOM;
 
@@ -30,7 +35,7 @@ public class ChatRoomDao implements IRoomDao {
 
     private static final String SELECT_MEMBERS;
 
-    private static final String SELECT_ROOMS;
+    private static final String SELECT_ROOMS_USER;
 
 
 
@@ -44,8 +49,9 @@ public class ChatRoomDao implements IRoomDao {
 
     @Override
     public void createTables() {
-        try(PreparedStatement roomtableStmt = connection.getConnection().prepareStatement(CREATE_ROOM_TABLE);
-            PreparedStatement roomUserTableStmt = connection.getConnection().prepareStatement(CREATE_ROOM_USER_TABLE)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement roomtableStmt = conn.prepareStatement(CREATE_ROOM_TABLE);
+            PreparedStatement roomUserTableStmt = conn.prepareStatement(CREATE_ROOM_USER_TABLE)) {
 
             roomtableStmt.executeUpdate();
             roomUserTableStmt.executeUpdate();
@@ -60,7 +66,8 @@ public class ChatRoomDao implements IRoomDao {
 
     @Override
     public boolean addUserToRoom(long userId, long roomId) {
-        try(PreparedStatement statement = connection.getConnection().prepareStatement(INSERT_MEMBER)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement statement = conn.prepareStatement(INSERT_MEMBER)) {
 
             statement.setLong(1,roomId);
             statement.setLong(2,userId);
@@ -77,8 +84,9 @@ public class ChatRoomDao implements IRoomDao {
 
     @Override
     public boolean addUserToRoom(long userId, String roomName) {
-        try(PreparedStatement statement = connection.getConnection().prepareStatement(INSERT_MEMBER);
-            PreparedStatement selectRoomStatement = connection.getConnection().prepareStatement(SELECT_ROOM_NAME)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement statement = conn.prepareStatement(INSERT_MEMBER);
+            PreparedStatement selectRoomStatement = conn.prepareStatement(SELECT_ROOM_NAME)) {
 
 
             selectRoomStatement.setString(1,roomName);
@@ -101,8 +109,39 @@ public class ChatRoomDao implements IRoomDao {
     }
 
     @Override
+    public Set<ChatRoom> getRooms() {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement selectRoomsStatement = conn.prepareStatement(SELECT_ROOMS);) {
+
+
+            ResultSet resultSet = selectRoomsStatement.executeQuery();
+
+            Set<ChatRoom> rooms = new HashSet<>();
+
+            while (resultSet.next()) {
+
+                ChatRoom room =  new ChatRoom(
+                        resultSet.getLong("room_id"),
+                        resultSet.getString("name"),
+                        resultSet.getBoolean("auth"),
+                        resultSet.getString("password"));
+
+                rooms.add(room);
+
+            }
+
+            return rooms;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return new HashSet<>();
+    }
+
+    @Override
     public ChatRoom getRoom(long roomId) {
-        try(PreparedStatement statement = connection.getConnection().prepareStatement(SELECT_ROOM)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement statement = conn.prepareStatement(SELECT_ROOM)) {
 
             statement.setLong(1,roomId);
 
@@ -113,7 +152,7 @@ public class ChatRoomDao implements IRoomDao {
                         resultSet.getLong("room_id"),
                         resultSet.getString("name"),
                         resultSet.getBoolean("auth"),
-                        resultSet.getString("name"));
+                        resultSet.getString("password"));
             }
 
         } catch (SQLException e) {
@@ -125,7 +164,8 @@ public class ChatRoomDao implements IRoomDao {
 
     @Override
     public Set<Long> getRoomsFromUserId(long userId) {
-        try(PreparedStatement statement = connection.getConnection().prepareStatement(SELECT_ROOMS)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement statement = conn.prepareStatement(SELECT_ROOMS)) {
 
             statement.setLong(1,userId);
 
@@ -147,7 +187,8 @@ public class ChatRoomDao implements IRoomDao {
 
     @Override
     public Set<Long> getMembersFromRoomId(long roomId) {
-        try(PreparedStatement statement = connection.getConnection().prepareStatement(SELECT_MEMBERS)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement statement = conn.prepareStatement(SELECT_MEMBERS)) {
 
             statement.setLong(1,roomId);
 
@@ -169,7 +210,8 @@ public class ChatRoomDao implements IRoomDao {
 
     @Override
     public void removeUserFromRoom(long userId, long roomId) {
-        try(PreparedStatement statement = connection.getConnection().prepareStatement(DELETE_MEMBER)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement statement = conn.prepareStatement(DELETE_MEMBER)) {
 
             statement.setLong(1,roomId);
             statement.setLong(2,userId);
@@ -184,7 +226,8 @@ public class ChatRoomDao implements IRoomDao {
 
     @Override
     public boolean createRoom(String roomName, boolean auth, String password) {
-        try(PreparedStatement statement = connection.getConnection().prepareStatement(INSERT_ROOM)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement statement = conn.prepareStatement(INSERT_ROOM)) {
 
             statement.setString(1,roomName);
             statement.setBoolean(2,auth);
@@ -201,7 +244,8 @@ public class ChatRoomDao implements IRoomDao {
 
     @Override
     public ChatRoom getRoomByName(String roomName) {
-        try(PreparedStatement statement = connection.getConnection().prepareStatement(SELECT_ROOM_NAME)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement statement = conn.prepareStatement(SELECT_ROOM_NAME)) {
 
             statement.setString(1,roomName);
 
@@ -212,7 +256,7 @@ public class ChatRoomDao implements IRoomDao {
                         resultSet.getLong("room_id"),
                         resultSet.getString("name"),
                         resultSet.getBoolean("auth"),
-                        resultSet.getString("name"));
+                        resultSet.getString("password"));
             }
 
         } catch (SQLException e) {
@@ -224,7 +268,8 @@ public class ChatRoomDao implements IRoomDao {
 
     @Override
     public boolean deleteRoom(String roomName) {
-        try(PreparedStatement statement = connection.getConnection().prepareStatement(DELETE_ROOM)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement statement = conn.prepareStatement(DELETE_ROOM)) {
 
             statement.setString(1,roomName);
 
@@ -239,7 +284,7 @@ public class ChatRoomDao implements IRoomDao {
 
     static {
 
-        CREATE_ROOM_TABLE = "CREATE TABLE IF NOT EXISTS room (room_id BIGINT NOT NULL, name VARCHAR(32), auth BOOLEAN, password VARCHAR(64), PRIMARY KEY(room_id), UNIQUE(name))";
+        CREATE_ROOM_TABLE = "CREATE TABLE IF NOT EXISTS room (room_id BIGINT AUTO_INCREMENT, name VARCHAR(32), auth BOOLEAN, password VARCHAR(64), PRIMARY KEY(room_id), UNIQUE(name))";
         CREATE_ROOM_USER_TABLE = "CREATE TABLE IF NOT EXISTS room_user (room_id BIGINT NOT NULL, user_id BIGINT NOT NULL,FOREIGN KEY(room_id) REFERENCES room(room_id) ON DELETE CASCADE,FOREIGN KEY(user_id) REFERENCES user(user_id) ON DELETE CASCADE)";
         INSERT_ROOM = "INSERT INTO room (name,auth,password) VALUES (?,?,?)";
 
@@ -249,12 +294,14 @@ public class ChatRoomDao implements IRoomDao {
 
         SELECT_ROOM = "SELECT * FROM room WHERE roomId = ?";
 
+        SELECT_ROOMS = "SELECT * FROM room";
+
 
         INSERT_MEMBER = "INSERT INTO room_user (room_id,user_id) VALUES (?,?)";
 
 
         SELECT_MEMBERS = "SELECT user_id FROM room_user WHERE room_id = ?";
-        SELECT_ROOMS = "SELECT room_id FROM room_user WHERE user_id = ?";
+        SELECT_ROOMS_USER = "SELECT room_id FROM room_user WHERE user_id = ?";
 
     }
 

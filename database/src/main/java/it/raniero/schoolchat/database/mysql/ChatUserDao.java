@@ -7,10 +7,7 @@ import it.raniero.schoolchat.database.mysql.types.UserInformation;
 import it.raniero.schoolchat.database.mysql.utils.StringUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.*;
 import java.util.UUID;
 
 public class ChatUserDao implements IUserDao {
@@ -45,7 +42,8 @@ public class ChatUserDao implements IUserDao {
 
     @Override
     public void createTables() {
-        try(PreparedStatement tableStmt = connection.getConnection().prepareStatement(CREATE_TABLE)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement tableStmt = conn.prepareStatement(CREATE_TABLE)) {
 
             tableStmt.executeUpdate();
 
@@ -64,7 +62,8 @@ public class ChatUserDao implements IUserDao {
             return null;
         }
 
-        try(PreparedStatement insertUser = connection.getConnection().prepareStatement(INSERT_USER)) {
+        try(Connection conn = connection.getConnection();
+                PreparedStatement insertUser = conn.prepareStatement(INSERT_USER)) {
 
             String user = "ChatUser:" + username + ":" + System.currentTimeMillis();
             UUID uniqueId = UUID.nameUUIDFromBytes(user.getBytes(StandardCharsets.UTF_8));
@@ -75,7 +74,8 @@ public class ChatUserDao implements IUserDao {
             insertUser.setBoolean(4,false);
             insertUser.setBoolean(5,false);
 
-            insertUser.executeUpdate();
+
+            return insertUser.executeUpdate() != 0 ? uniqueId : null;
 
         } catch (SQLIntegrityConstraintViolationException e) {
 
@@ -94,8 +94,9 @@ public class ChatUserDao implements IUserDao {
     @Override
     public LoginStatus loginUser(String username, String password) {
 
-        try(PreparedStatement selectUser = connection.getConnection().prepareStatement(SELECT_USER_PASSWORD);
-            PreparedStatement updateSession = connection.getConnection().prepareStatement(UPDATE_SESSION)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement selectUser = conn.prepareStatement(SELECT_USER_PASSWORD);
+            PreparedStatement updateSession = conn.prepareStatement(UPDATE_SESSION)) {
 
 
             selectUser.setString(1,username);
@@ -161,7 +162,8 @@ public class ChatUserDao implements IUserDao {
 
     @Override
     public UserInformation getUser(String username) {
-        try(PreparedStatement selectUser = connection.getConnection().prepareStatement(SELECT_USER_USERNAME)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement selectUser = conn.prepareStatement(SELECT_USER_USERNAME)) {
 
 
             selectUser.setString(1,username);
@@ -194,7 +196,8 @@ public class ChatUserDao implements IUserDao {
 
     @Override
     public UserInformation getUser(UUID uuid) {
-        try(PreparedStatement selectUser = connection.getConnection().prepareStatement(SELECT_USER_UUID)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement selectUser = conn.prepareStatement(SELECT_USER_UUID)) {
 
 
             selectUser.setString(1,uuid.toString());
@@ -233,7 +236,8 @@ public class ChatUserDao implements IUserDao {
             return false;
         }
 
-        try(PreparedStatement insertUser = connection.getConnection().prepareStatement(UPDATE_NICKNAME)) {
+        try(Connection conn = connection.getConnection();
+            PreparedStatement insertUser = conn.prepareStatement(UPDATE_NICKNAME)) {
 
 
             insertUser.setString(1,selectedUsername);
